@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 
 public class MovieDAOImp extends DAOBASE implements MovieDAO {
 
-	private static final String INSERT_MOVIE_SQL = "INSERT INTO Movie VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	private static final String INSERT_MOVIE_SQL = "INSERT INTO Movie VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
 	@Override
 	public void insertMovie(Movie mov) {
 		// TODO Auto-generated method stub
@@ -25,6 +25,7 @@ public class MovieDAOImp extends DAOBASE implements MovieDAO {
 			pst.setString(8, mov.getAnother_Name());
 			pst.setString(9, mov.getMovie_Link());
 			pst.setString(10, mov.getMovie_Brief());
+			pst.setString(11, mov.getMovie_Img());
 			pst.executeUpdate();
 			pst.close();
 			conn.close();
@@ -80,9 +81,9 @@ public class MovieDAOImp extends DAOBASE implements MovieDAO {
 			e.printStackTrace();
 		}
 	}
-	private static final String GET_MOVIE_SQL = "SELECT * FROM Users WHERE Movie_ID = ?";
+	private static final String GET_MOVIE_SQL = "SELECT * FROM Movie WHERE Movie_ID = ?";
 	
-	public Movie getMovie(String Movie_ID) {
+	public Movie getMovie(String movie_ID) {
 		Connection conn = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -90,7 +91,7 @@ public class MovieDAOImp extends DAOBASE implements MovieDAO {
 		try {
 			conn = getConnection();
 			pst = conn.prepareStatement(GET_MOVIE_SQL);
-			pst.setString(1, Movie_ID);
+			pst.setString(1, movie_ID);
 			rs = pst.executeQuery();
 			rs.next();
 			mov.setMovie_ID(rs.getString("Movie_ID"));
@@ -111,5 +112,66 @@ public class MovieDAOImp extends DAOBASE implements MovieDAO {
 		}
 		
 		return mov;
+	}
+	
+	private static final String GET_ID_SQL = "SELECT Count(Movie_ID) AS X FROM Movie ";
+	public String GetID()
+	{
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+	    String ID_Count = null;
+		try {
+			conn = getConnection();
+			pst = conn.prepareStatement(GET_ID_SQL);
+			rs = pst.executeQuery();
+			rs.next();
+			ID_Count = rs.getString("X");
+			pst.close();
+			conn.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		return ID_Count;
+	}
+	
+	private static final String GET_Director_SQL = "SELECT Performer_Name FROM Performer AS X,Participate AS Y,Movie AS Z WHERE X.Performer_ID=Y.Performer_ID AND Y.Movie_ID=Z.Movie_ID AND X.Performer_Type='0' AND Z.Movie_ID=? ";
+	public String GetDirector(String movie_ID)
+	{
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		String Director_Name = null;
+		try {
+			conn = getConnection();
+			pst = conn.prepareStatement(GET_Director_SQL);
+			pst.setString(1, movie_ID);
+			rs = pst.executeQuery();
+			rs.next();
+			Director_Name = rs.getString("Performer_Name");
+			pst.close();
+			conn.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		return Director_Name;
+	}
+	
+	public void GetMovie_Message(String movie_ID)
+	{
+		MovieDAOImp s= new MovieDAOImp();
+		System.out.println("电影："+s.getMovie(movie_ID).getMovie_Title()
+				           +"\n导演："+s.GetDirector(movie_ID)
+				           +"\n编剧："+s.getMovie(movie_ID).getWriter()
+				           +"\n制片国家/地区："+s.getMovie(movie_ID).getCountry()
+				           +"\n上映日期："+s.getMovie(movie_ID).getMovie_Date()
+				           +"\n片长："+s.getMovie(movie_ID).getMovie_Time()
+				           +"\n语言："+s.getMovie(movie_ID).getLanguage()
+				           +"\n又名："+s.getMovie(movie_ID).getAnother_Name()
+				           +"\nIMDb链接："+s.getMovie(movie_ID).getMovie_Link()
+				           +"\n剧情简介："+s.getMovie(movie_ID).getMovie_Brief()
+				);
 	}
 }
