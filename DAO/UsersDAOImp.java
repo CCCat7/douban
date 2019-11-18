@@ -158,7 +158,7 @@ public class UsersDAOImp extends DAOBASE implements UsersDAO {
 		return m;
 	}
 	
-	private static final String GET_NOWID_SQL = "SELECT Users_ID FROM Users WHERE Account=?";//获取当前用户id
+	private static final String GET_NOWID_SQL = "SELECT Users_ID FROM Users WHERE Account=?";//通过帐号获取当前用户id
 
 	public String getUsers_id(String account)
 	{
