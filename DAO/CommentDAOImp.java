@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class CommentDAOImp extends DAOBASE implements CommentDAO {
@@ -107,5 +109,90 @@ public class CommentDAOImp extends DAOBASE implements CommentDAO {
 		}
 		
 		return com;
+	}
+	
+private static final String GET_COMMENT_FORM_MOVIE_SQL = "SELECT * FROM Comment WHERE Movie_ID = ?";
+	//获取该电影的评论
+	public List<Comment> getComment_fm(String Movie_ID) {
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		
+		List<Comment> c=new ArrayList<>();
+		try {
+			conn = getConnection();
+			pst = conn.prepareStatement(GET_COMMENT_FORM_MOVIE_SQL);
+			pst.setString(1, Movie_ID);
+			rs = pst.executeQuery();
+			
+			while(rs.next())
+			{
+				Comment com=new Comment();
+				com.setUsers_ID(rs.getString("Users_ID"));
+				com.setMovie_ID(rs.getString("Movie_ID"));
+				com.setIsWatch(rs.getString("IsWatch"));
+				com.setComment_Content(rs.getString("Comment_Content"));
+				com.setScore(rs.getInt("Score"));
+				com.setComment_Date(rs.getTimestamp("Comment_Date"));
+				com.setIsPhone(rs.getString("IsPhone"));
+				c.add(com);
+			}
+			pst.close();
+			conn.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return c;
+	}
+	
+	private static final String GET_COMMENT_UNUM_SQL = "SELECT COUNT(SCORE) AS X FROM Comment WHERE Movie_ID = ? AND SCORE!='0'";
+	//获取评论该电影的有效分数的人数
+	public int getComment_Unum(String Movie_ID) {
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		int usersnum=0;
+		try {
+			conn = getConnection();
+			pst = conn.prepareStatement(GET_COMMENT_UNUM_SQL);
+			pst.setString(1, Movie_ID);
+			rs = pst.executeQuery();
+			rs.next();
+
+			usersnum=(rs.getInt("X"));
+			pst.close();
+			conn.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return usersnum;
+	}
+	private static final String GET_COMMENT_TOTAL_SQL = "SELECT SUM(SCORE) AS Y FROM Comment WHERE Movie_ID = ? AND SCORE!='0'";
+	//获取评论该电影的有效分数的人数
+	public int getComment_Total(String Movie_ID) {
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		int snum=0;
+		try {
+			conn = getConnection();
+			pst = conn.prepareStatement(GET_COMMENT_TOTAL_SQL);
+			pst.setString(1, Movie_ID);
+			rs = pst.executeQuery();
+			rs.next();
+
+			snum=(rs.getInt("Y"));
+			pst.close();
+			conn.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return snum;
 	}
 }
