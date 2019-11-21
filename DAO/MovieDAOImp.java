@@ -138,7 +138,7 @@ public class MovieDAOImp extends DAOBASE implements MovieDAO {
 	}
 	
 	private static final String GET_ID_SQL = "SELECT Count(Movie_ID) AS X FROM Movie ";
-	public String GetID()
+	public String GetID()//获取新增一条电影信息的ID
 	{
 		Connection conn = null;
 		PreparedStatement pst = null;
@@ -160,7 +160,7 @@ public class MovieDAOImp extends DAOBASE implements MovieDAO {
 	}
 	
 	private static final String GET_Director_SQL = "SELECT Performer_Name FROM Performer AS X,Participate AS Y,Movie AS Z WHERE X.Performer_ID=Y.Performer_ID AND Y.Movie_ID=Z.Movie_ID AND X.Performer_Type='0' AND Z.Movie_ID=? ";
-	public String GetDirector(String movie_ID)
+	public String GetDirector(String movie_ID)//获取该电影的导演名字
 	{
 		Connection conn = null;
 		PreparedStatement pst = null;
@@ -183,7 +183,7 @@ public class MovieDAOImp extends DAOBASE implements MovieDAO {
 	}
 	
 	private static final String GET_ACTOR_NUM_SQL = "SELECT COUNT(Performer_Name) AS X FROM Performer AS X,Participate AS Y,Movie AS Z WHERE X.Performer_ID=Y.Performer_ID AND Y.Movie_ID=Z.Movie_ID AND X.Performer_Type='1' AND Z.Movie_ID=? ";
-	public int GetActor_Num(String movie_ID)
+	public int GetActor_Num(String movie_ID)//获取主演的数目
 	{
 		Connection conn = null;
 		PreparedStatement pst = null;
@@ -206,7 +206,7 @@ public class MovieDAOImp extends DAOBASE implements MovieDAO {
 	}
 	
 	private static final String GET_ACTOR_SQL = "SELECT Performer_Name FROM Performer AS X,Participate AS Y,Movie AS Z WHERE X.Performer_ID=Y.Performer_ID AND Y.Movie_ID=Z.Movie_ID AND X.Performer_Type='1' AND Z.Movie_ID=? ";
-	public String GetPerformer(String movie_ID)
+	public String GetPerformer(String movie_ID)//获取所有主演名字
 	{
 		Connection conn = null;
 		PreparedStatement pst = null;
@@ -229,14 +229,80 @@ public class MovieDAOImp extends DAOBASE implements MovieDAO {
 		catch(Exception e){
 			e.printStackTrace();
 		}
-		String AllActor=Actor_Name[0] + "/";
-		for(int i=1;i<num-1;i++)
-		AllActor = AllActor + Actor_Name[i] + "/";		
-		AllActor = AllActor + Actor_Name[num-1];
+		String AllActor=Actor_Name[0];
+		if(num>1)
+		{
+			AllActor+="/";
+			for(int i=1;i<num-1;i++)
+				AllActor = AllActor + Actor_Name[i] + "/";		
+			AllActor = AllActor + Actor_Name[num-1];
+		}
 		return AllActor;
 	}
 	
-	public void GetMovie_Message(String movie_ID)
+	private static final String GET_AWARD_NUM_SQL = "SELECT COUNT(Award_Name) AS X\r\n" + 
+			"FROM Movie_GetAward\r\n" + 
+			"WHERE Movie_ID=?";
+	public int GetAward_Num(String movie_ID)//获该电影的奖项数量
+	{
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+	    int Award_Num = 0;
+		try {
+			conn = getConnection();
+			pst = conn.prepareStatement(GET_AWARD_NUM_SQL);
+			pst.setString(1, movie_ID);
+			rs = pst.executeQuery();
+			rs.next();
+			Award_Num = rs.getInt("X");
+			pst.close();
+			conn.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		return Award_Num;
+	}
+	
+	private static final String GET_AWARDS_SQL = "SELECT Award_Name\r\n" + 
+			"FROM Movie_GetAward\r\n" + 
+			"WHERE Movie_ID=?";
+	public String GetAwards_Name(String movie_ID)//获得该电影得到的所有奖项
+	{
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		int num=GetAward_Num(movie_ID);
+		String [] Award_Name = new String[num];
+		try {
+			conn = getConnection();
+			pst = conn.prepareStatement(GET_AWARDS_SQL);
+			pst.setString(1, movie_ID);
+			rs = pst.executeQuery();
+			for(int i=0;i<num;i++)
+			{
+		    rs.next();
+		    Award_Name[i] = rs.getString("Award_Name");
+			}
+			pst.close();
+			conn.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		String AllAward=Award_Name[0];
+		if(num>1)
+		{
+			AllAward+="/";
+			for(int i=1;i<num-1;i++)
+				AllAward = AllAward + Award_Name[i] + "/";		
+			AllAward = AllAward + Award_Name[num-1];
+		}
+		return AllAward;
+	}
+	
+	public void GetMovie_Message(String movie_ID)//输出电影相关信息
 	{
 		System.out.println("电影："+getMovie(movie_ID).getMovie_Title()
 				           +"\n导演："+GetDirector(movie_ID)
@@ -250,5 +316,7 @@ public class MovieDAOImp extends DAOBASE implements MovieDAO {
 				           +"\nIMDb链接："+getMovie(movie_ID).getMovie_Link()
 				           +"\n剧情简介："+getMovie(movie_ID).getMovie_Brief()
 				);
+		if(GetAward_Num(movie_ID)!=0)
+			System.out.println("获得奖项："+GetAwards_Name(movie_ID));
 	}
 }
