@@ -32,8 +32,8 @@ public class Participate_DiscussDAOImp extends DAOBASE implements Participate_Di
 		}
 	}
 
-	private static final String DELETE_Participate_Discuss_SQL = "DELETE FROM Participate_Discuss WHERE Discuss_ID = ? AND Creator_ID = ? AND Comment_ID = ?";
-	public void deleteParticipate_Discuss(String discuss_ID,String creator_ID,String comment_ID) {
+	private static final String DELETE_Participate_Discuss_SQL = "DELETE FROM Participate_Discuss WHERE Discuss_ID = ? AND Comment_ID = ?";
+	public void deleteParticipate_Discuss(String discuss_ID,String comment_ID) {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		PreparedStatement pst = null;
@@ -41,8 +41,7 @@ public class Participate_DiscussDAOImp extends DAOBASE implements Participate_Di
 			conn = getConnection();
 			pst = conn.prepareStatement(DELETE_Participate_Discuss_SQL);
 			pst.setString(1, discuss_ID);
-			pst.setString(2, creator_ID);
-			pst.setString(3, comment_ID);
+			pst.setString(2, comment_ID);
 			pst.executeUpdate();
 			pst.close();
 			conn.close();
@@ -76,9 +75,9 @@ public class Participate_DiscussDAOImp extends DAOBASE implements Participate_Di
 			e.printStackTrace();
 		}
 	}
-	private static final String GET_Participate_Discuss_SQL = "SELECT * FROM Participate_Discuss WHERE Discuss_ID = ? AND Creator_ID = ? AND Comment_ID = ?";
+	private static final String GET_Participate_Discuss_SQL = "SELECT * FROM Participate_Discuss WHERE Discuss_ID = ? AND Comment_ID = ?";
 	
-	public Participate_Discuss getParticipate_Discuss(String discuss_ID,String creator_ID,String comment_ID) {
+	public Participate_Discuss getParticipate_Discuss(String discuss_ID,String comment_ID) {
 		Connection conn = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
@@ -87,8 +86,7 @@ public class Participate_DiscussDAOImp extends DAOBASE implements Participate_Di
 			conn = getConnection();
 			pst = conn.prepareStatement(GET_Participate_Discuss_SQL);
 			pst.setString(1, discuss_ID);
-			pst.setString(2, creator_ID);
-			pst.setString(3, comment_ID);
+			pst.setString(2, comment_ID);
 			rs = pst.executeQuery();
 			rs.next();
 			pcd.setDiscuss_ID(rs.getString("Discuss_ID"));
@@ -135,8 +133,8 @@ public class Participate_DiscussDAOImp extends DAOBASE implements Participate_Di
 	
 	private static final String GET_COMMENT_SQL = "SELECT *\r\n" + 
 			"FROM Participate_Discuss\r\n" + 
-			"WHERE Discuss_ID=? AND Reviewer_ID IS NULL";
-	public List<Participate_Discuss> GetComment(String discuss_ID)//获得小组讨论中不是回复的所有评论
+			"WHERE Discuss_ID=?";
+	public List<Participate_Discuss> GetComment(String discuss_ID)//获得小组讨论中所有评论
 	{
 		Connection conn = null;
 		PreparedStatement pst = null;
@@ -167,38 +165,29 @@ public class Participate_DiscussDAOImp extends DAOBASE implements Participate_Di
 		return l;
 	}
 	
-	private static final String GET_REPLY_SQL = "SELECT * " + 
+	private static final String GET_CONTENT_SQL = "SELECT Discuss_Content\r\n" + 
 			"FROM Participate_Discuss\r\n" + 
-			"WHERE Discuss_ID=? AND Creator_ID=? ";
-	public List<Participate_Discuss> GetReply(String discuss_ID,String creator_ID)//获得小组讨论中的回复评论
+			"WHERE Discuss_ID=? AND Creator_ID=?";
+	public String GetDiscuss_Content(String discuss_ID,String creator_ID)
 	{
 		Connection conn = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
-        List<Participate_Discuss> l=new ArrayList<Participate_Discuss>();
+	    String content = null;
 		try {
 			conn = getConnection();
-			pst = conn.prepareStatement(GET_REPLY_SQL);
+			pst = conn.prepareStatement(GET_CONTENT_SQL);
 			pst.setString(1, discuss_ID);
 			pst.setString(2, creator_ID);
 			rs = pst.executeQuery();
-			while(rs.next())
-			{
-				Participate_Discuss pcd=new Participate_Discuss();
-				pcd.setDiscuss_ID(rs.getString("Discuss_ID"));
-				pcd.setCreator_ID(rs.getString("Creator_ID"));
-				pcd.setComment_ID(rs.getInt("Comment_ID"));
-				pcd.setReviewer_ID(rs.getString("Reviewer_ID"));
-				pcd.setDiscuss_Content(rs.getString("Discuss_Content"));
-				pcd.setComment_Date(rs.getTimestamp("Comment_Date"));
-				l.add(pcd);
-			}
+			rs.next();
+			content = rs.getString("Discuss_Content");
 			pst.close();
 			conn.close();
 		}
 		catch(Exception e){
 			e.printStackTrace();
 		}
-		return l;
-	}
+		return content;
+		}
 }
