@@ -4,7 +4,6 @@ package doubandao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.text.DateFormat;
 
 
 public class LabelDAOImp extends DAOBASE implements LabelDAO {
@@ -93,5 +92,30 @@ public class LabelDAOImp extends DAOBASE implements LabelDAO {
 		}
 		
 		return lab;
+	}
+	
+	private static final String GET_CLIICK_NUM_SQL = "SELECT COUNT(Users_ID) AS X\r\n" + 
+			"FROM Label\r\n" + 
+			"WHERE Label_Content=?";
+	public int GetClick_Num(String label_content)//获得该标签的点击量
+	{
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+	    int Click_Num = 0;
+		try {
+			conn = getConnection();
+			pst = conn.prepareStatement(GET_CLIICK_NUM_SQL);
+			pst.setString(1, label_content);
+			rs = pst.executeQuery();
+			rs.next();
+			Click_Num = rs.getInt("X");
+			pst.close();
+			conn.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		return Click_Num;
 	}
 }
